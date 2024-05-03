@@ -19,13 +19,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @mui/x-charts/PieChart */ "./node_modules/@mui/x-charts/esm/PieChart/PieChart.js");
-/* harmony import */ var _mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @mui/x-charts/PieChart */ "./node_modules/@mui/x-charts/esm/PieChart/PieArcLabel.js");
 /* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
 /* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
 __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
 
 var _jsxFileName = "/Users/jwesly/Documents/EtymAnalyze/frontend/src/App.js",
   _s = __webpack_require__.$Refresh$.signature();
+
 
 
 
@@ -67,22 +67,26 @@ function App() {
   const data = {
     words: wordsNotInMap
   };
-  console.log(data);
-  if (wordsNotInMap.length != 0) {
+  function lookupAgainstBackend() {
     console.log("posting that data!");
     axios__WEBPACK_IMPORTED_MODULE_4__["default"].post("https://pkuj506kcg.execute-api.us-west-2.amazonaws.com/default/etymologyLookup", data).then(result => {
       console.log("got result data", result.data);
       if (result && result.data && result.data.words && Object.keys(result.data.words).length != 0) {
         const newWordMap = result.data.words;
-        for (let word in newWordMap) {
-          wordToLanguageMap[word] = newWordMap[word];
+        for (let word in wordToLanguageMap) {
+          newWordMap[word] = wordToLanguageMap[word];
         }
-        setWordToLanguageMap(wordToLanguageMap);
+        setWordToLanguageMap(newWordMap);
+        console.log("updated word to language map");
       }
     }).catch(err => {
       console.log("Attempted on data", data);
       console.error("Failed to update words from backend:", err);
     });
+  }
+  console.log("words not in map: ", data);
+  if (wordsNotInMap.length != 0) {
+    lookupAgainstBackend();
   }
   let languageFrequencyMap = wordsToLanguageFrequency(words, wordToLanguageMap);
   return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
@@ -94,9 +98,9 @@ function App() {
         onChange: e => setRawText(e.target.value)
       }, void 0, false, {
         fileName: _jsxFileName,
-        lineNumber: 233,
+        lineNumber: 239,
         columnNumber: 9
-      }, this), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(_mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_5__.PieChart, {
+      }, this), Object.keys(wordToLanguageMap).length > 0 ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(_mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_5__.PieChart, {
         series: [{
           data: lodash__WEBPACK_IMPORTED_MODULE_1___default().map(lodash__WEBPACK_IMPORTED_MODULE_1___default().keys(languageFrequencyMap), lang => {
             return {
@@ -106,31 +110,20 @@ function App() {
             };
           })
         }],
-        sx: {
-          color: 'white',
-          [`& .${_mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_6__.pieArcLabelClasses.root}`]: {
-            fill: 'white',
-            fontWeight: 'bold'
-          },
-          '& .MuiChartsLegend-series': {
-            color: 'white',
-            fill: 'white'
-          }
-        },
-        width: 600
+        width: 400
       }, void 0, false, {
         fileName: _jsxFileName,
-        lineNumber: 234,
+        lineNumber: 242,
         columnNumber: 9
-      }, this)]
+      }, this) : null]
     }, void 0, true, {
       fileName: _jsxFileName,
-      lineNumber: 232,
+      lineNumber: 238,
       columnNumber: 7
     }, this)
   }, void 0, false, {
     fileName: _jsxFileName,
-    lineNumber: 231,
+    lineNumber: 237,
     columnNumber: 5
   }, this);
 }
@@ -92749,7 +92742,7 @@ function combine(array, callback) {
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("0a38d77dffcc9d781549")
+/******/ 		__webpack_require__.h = () => ("6ec4a63c6a78b0c14e70")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/global */
