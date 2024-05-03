@@ -117,8 +117,7 @@ function App() {
             fill: 'white'
           }
         },
-        width: '200em',
-        height: '200em'
+        width: 600
       }, void 0, false, {
         fileName: _jsxFileName,
         lineNumber: 234,
@@ -92750,7 +92749,7 @@ function combine(array, callback) {
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("845531790a094aa2b6d1")
+/******/ 		__webpack_require__.h = () => ("0a38d77dffcc9d781549")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/global */
