@@ -19,6 +19,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @mui/x-charts/PieChart */ "./node_modules/@mui/x-charts/esm/PieChart/PieChart.js");
+/* harmony import */ var _mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @mui/x-charts/PieChart */ "./node_modules/@mui/x-charts/esm/PieChart/PieArcLabel.js");
 /* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
 /* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
 __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
@@ -32,13 +33,6 @@ var _jsxFileName = "/Users/jwesly/Documents/EtymAnalyze/frontend/src/App.js",
 
 
 const languages = ["Abnaki", "Afrikaans", "Akkadian", "Algonquian", "American English", "American Spanish", "Anglian", "Anglo-French", "Anglo-Latin", "Anglo-Norman", "Arabic", "Aramaic", "Arawakan", "Armenian", "Assyrian", "Attic", "Basque", "Breton", "Cantonese", "Carib", "Catalan", "Celtic", "Cherokee", "Chinook", "Church Latin", "Coptic", "Cornish", "Croatian", "Czech", "Danish", "Dravidian", "Dutch", "Ecclesiastical Greek", "East Frisian", "Egyptian", "English", "Estonian", "Etruscan", "Faroese", "Finnish", "Flemish", "Frankish", "French", "Frisian", "Fulani", "Gallo-Romance", "Gallo-Roman", "Gaelic", "Gaulish", "German", "Germanic", "Gothic", "Greek", "Guarani", "Hawaiian", "Hebrew", "Hungarian", "Ibo", "Irish", "Iranian", "Iroquoian", "Italian", "Japanese", "Kentish", "Kurdish", "Kwa", "Late Latin", "Latin", "Lithuanian", "Low German", "Malay", "Mandarin", "Mandingo", "Medieval Latin", "Mercian", "Mexican Spanish", "Micmac", "Middle Dutch", "Middle English", "Middle French", "Middle High German", "Middle Irish", "Middle Low German", "Modern English", "Modern Greek", "Muskogean", "Nahuatl", "North Germanic", "North Sea Germanic", "Northumbrian", "Old Celtic", "Old French", "Ojibwa", "Old Church Slavonic", "Old Danish", "Old Dutch", "Old English", "Old Frisian", "Old High German", "Old Irish", "Old Italian", "Old Low German", "Old Norse", "Old North French", "Old Persian", "Old Provençal", "Old Prussian", "Old Saxon", "Old Slavic", "Old Spanish", "Old Swedish", "Oscan", "Pashto", "Pennsylvania Dutch", "Persian", "Phoenician", "Phyrgian", "PIE", "Piman", "Polish", "Portuguese", "Pre-Greek", "Proto-Germanic", "Proto-Italic", "Proto-Indo-European", "Quechua", "Russian", "Sanskrit", "Scandinavian", "Scottish", "Semitic", "Serbian", "Serbo-Croatian", "Sinhalese", "Siouan", "Slavic", "Slovak", "Spanish", "Sumerian", "Swedish", "Tagalog", "Tamil", "Telugu", "Thai", "Tibetan", "Tupi", "Turkish", "Turkic", "Twi", "Ukrainian", "Uto-Aztecan", "Vulgar Latin", "West African", "West Frisian", "West Germanic", "Wolof", "West Saxon", "Xhosa", "Yoruba"];
-const wordsToLanguageId = {
-  'lorem': 'Latin',
-  'ipsum': 'Latin',
-  'life': 'Old English',
-  'fancy': 'French',
-  'etymology': 'Greek'
-};
 function splitIntoWords(text) {
   let words = text.split(" ");
   words = lodash__WEBPACK_IMPORTED_MODULE_1___default().map(words, word => {
@@ -65,7 +59,7 @@ function wordsToLanguageFrequency(words, wordToLanguageMap) {
 function App() {
   _s();
   const [rawText, setRawText] = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)("Type a sentence and discover its etymology");
-  const [wordToLanguageMap, setWordToLanguageMap] = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(wordsToLanguageId);
+  const [wordToLanguageMap, setWordToLanguageMap] = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)({});
   let words = splitIntoWords(rawText);
   let wordsNotInMap = words.filter(word => !wordToLanguageMap[word]);
   // TODO(deduplicate)
@@ -100,13 +94,7 @@ function App() {
         onChange: e => setRawText(e.target.value)
       }, void 0, false, {
         fileName: _jsxFileName,
-        lineNumber: 241,
-        columnNumber: 9
-      }, this), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
-        children: rawText
-      }, void 0, false, {
-        fileName: _jsxFileName,
-        lineNumber: 242,
+        lineNumber: 233,
         columnNumber: 9
       }, this), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(_mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_5__.PieChart, {
         series: [{
@@ -118,25 +106,36 @@ function App() {
             };
           })
         }],
-        width: 400,
-        height: 200
+        sx: {
+          color: 'white',
+          [`& .${_mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_6__.pieArcLabelClasses.root}`]: {
+            fill: 'white',
+            fontWeight: 'bold'
+          },
+          '& .MuiChartsLegend-series': {
+            color: 'white',
+            fill: 'white'
+          }
+        },
+        width: '200em',
+        height: '200em'
       }, void 0, false, {
         fileName: _jsxFileName,
-        lineNumber: 245,
+        lineNumber: 234,
         columnNumber: 9
       }, this)]
     }, void 0, true, {
       fileName: _jsxFileName,
-      lineNumber: 240,
+      lineNumber: 232,
       columnNumber: 7
     }, this)
   }, void 0, false, {
     fileName: _jsxFileName,
-    lineNumber: 239,
+    lineNumber: 231,
     columnNumber: 5
   }, this);
 }
-_s(App, "C9li0Q6eYKk2d3PT3Oq+UYPRzH4=");
+_s(App, "DH1KtzjhxyizRjQBGgY/jk85RxY=");
 _c = App;
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (App);
 var _c;
@@ -76658,14 +76657,18 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.App {
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: 	#F5F5DC;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: black;
+}
+
+.PieChart {
+  color: white
 }
 
 .App-link {
@@ -76680,7 +76683,7 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.App {
     transform: rotate(360deg);
   }
 }
-`, "",{"version":3,"sources":["webpack://./src/App.css"],"names":[],"mappings":"AAAA;EACE,kBAAkB;AACpB;;AAEA;EACE,cAAc;EACd,oBAAoB;AACtB;;AAEA;EACE;IACE,4CAA4C;EAC9C;AACF;;AAEA;EACE,yBAAyB;EACzB,iBAAiB;EACjB,aAAa;EACb,sBAAsB;EACtB,mBAAmB;EACnB,uBAAuB;EACvB,6BAA6B;EAC7B,YAAY;AACd;;AAEA;EACE,cAAc;AAChB;;AAEA;EACE;IACE,uBAAuB;EACzB;EACA;IACE,yBAAyB;EAC3B;AACF","sourcesContent":[".App {\n  text-align: center;\n}\n\n.App-logo {\n  height: 40vmin;\n  pointer-events: none;\n}\n\n@media (prefers-reduced-motion: no-preference) {\n  .App-logo {\n    animation: App-logo-spin infinite 20s linear;\n  }\n}\n\n.App-header {\n  background-color: #282c34;\n  min-height: 100vh;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  font-size: calc(10px + 2vmin);\n  color: white;\n}\n\n.App-link {\n  color: #61dafb;\n}\n\n@keyframes App-logo-spin {\n  from {\n    transform: rotate(0deg);\n  }\n  to {\n    transform: rotate(360deg);\n  }\n}\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["webpack://./src/App.css"],"names":[],"mappings":"AAAA;EACE,kBAAkB;AACpB;;AAEA;EACE,cAAc;EACd,oBAAoB;AACtB;;AAEA;EACE;IACE,4CAA4C;EAC9C;AACF;;AAEA;EACE,0BAA0B;EAC1B,iBAAiB;EACjB,aAAa;EACb,sBAAsB;EACtB,mBAAmB;EACnB,uBAAuB;EACvB,6BAA6B;EAC7B,YAAY;AACd;;AAEA;EACE;AACF;;AAEA;EACE,cAAc;AAChB;;AAEA;EACE;IACE,uBAAuB;EACzB;EACA;IACE,yBAAyB;EAC3B;AACF","sourcesContent":[".App {\n  text-align: center;\n}\n\n.App-logo {\n  height: 40vmin;\n  pointer-events: none;\n}\n\n@media (prefers-reduced-motion: no-preference) {\n  .App-logo {\n    animation: App-logo-spin infinite 20s linear;\n  }\n}\n\n.App-header {\n  background-color: \t#F5F5DC;\n  min-height: 100vh;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  font-size: calc(10px + 2vmin);\n  color: black;\n}\n\n.PieChart {\n  color: white\n}\n\n.App-link {\n  color: #61dafb;\n}\n\n@keyframes App-logo-spin {\n  from {\n    transform: rotate(0deg);\n  }\n  to {\n    transform: rotate(360deg);\n  }\n}\n"],"sourceRoot":""}]);
 // Exports
 ___CSS_LOADER_EXPORT___.locals = {};
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
@@ -92747,7 +92750,7 @@ function combine(array, callback) {
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("de529cbbad0a7fe9b4fc")
+/******/ 		__webpack_require__.h = () => ("845531790a094aa2b6d1")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/global */
