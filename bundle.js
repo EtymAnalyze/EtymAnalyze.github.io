@@ -15,11 +15,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _App_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./App.css */ "./src/App.css");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @mui/x-charts/PieChart */ "./node_modules/@mui/x-charts/esm/PieChart/PieChart.js");
-/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+/* harmony import */ var p_limit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! p-limit */ "./node_modules/p-limit/index.js");
+/* harmony import */ var async_mutex__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! async-mutex */ "./node_modules/async-mutex/index.mjs");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @mui/x-charts/PieChart */ "./node_modules/@mui/x-charts/esm/PieChart/PieChart.js");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
 /* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
 __webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
 
@@ -32,7 +34,45 @@ var _jsxFileName = "/Users/jwesly/Documents/EtymAnalyze/frontend/src/App.js",
 
 
 
+
+
 const languages = ["Abnaki", "Afrikaans", "Akkadian", "Algonquian", "American English", "American Spanish", "Anglian", "Anglo-French", "Anglo-Latin", "Anglo-Norman", "Arabic", "Aramaic", "Arawakan", "Armenian", "Assyrian", "Attic", "Basque", "Breton", "Cantonese", "Carib", "Catalan", "Celtic", "Cherokee", "Chinook", "Church Latin", "Coptic", "Cornish", "Croatian", "Czech", "Danish", "Dravidian", "Dutch", "Ecclesiastical Greek", "East Frisian", "Egyptian", "English", "Estonian", "Etruscan", "Faroese", "Finnish", "Flemish", "Frankish", "French", "Frisian", "Fulani", "Gallo-Romance", "Gallo-Roman", "Gaelic", "Gaulish", "German", "Germanic", "Gothic", "Greek", "Guarani", "Hawaiian", "Hebrew", "Hungarian", "Ibo", "Irish", "Iranian", "Iroquoian", "Italian", "Japanese", "Kentish", "Kurdish", "Kwa", "Late Latin", "Latin", "Lithuanian", "Low German", "Malay", "Mandarin", "Mandingo", "Medieval Latin", "Mercian", "Mexican Spanish", "Micmac", "Middle Dutch", "Middle English", "Middle French", "Middle High German", "Middle Irish", "Middle Low German", "Modern English", "Modern Greek", "Muskogean", "Nahuatl", "North Germanic", "North Sea Germanic", "Northumbrian", "Old Celtic", "Old French", "Ojibwa", "Old Church Slavonic", "Old Danish", "Old Dutch", "Old English", "Old Frisian", "Old High German", "Old Irish", "Old Italian", "Old Low German", "Old Norse", "Old North French", "Old Persian", "Old Provençal", "Old Prussian", "Old Saxon", "Old Slavic", "Old Spanish", "Old Swedish", "Oscan", "Pashto", "Pennsylvania Dutch", "Persian", "Phoenician", "Phyrgian", "PIE", "Piman", "Polish", "Portuguese", "Pre-Greek", "Proto-Germanic", "Proto-Italic", "Proto-Indo-European", "Quechua", "Russian", "Sanskrit", "Scandinavian", "Scottish", "Semitic", "Serbian", "Serbo-Croatian", "Sinhalese", "Siouan", "Slavic", "Slovak", "Spanish", "Sumerian", "Swedish", "Tagalog", "Tamil", "Telugu", "Thai", "Tibetan", "Tupi", "Turkish", "Turkic", "Twi", "Ukrainian", "Uto-Aztecan", "Vulgar Latin", "West African", "West Frisian", "West Germanic", "Wolof", "West Saxon", "Xhosa", "Yoruba"];
+class WordLookupManager {
+  constructor() {
+    this.inFlightMap = {}; // Map to store promises for each word
+    this.batchSize = 15; // Batch size for backend requests
+    this.concurrencyLimit = 3; // Maximum number of concurrent requests
+    this.limit = (0,p_limit__WEBPACK_IMPORTED_MODULE_2__["default"])(this.concurrencyLimit); // Concurrency limiter
+  }
+  deduplicateAndAddToInFlightMap(stringArr) {
+    let deduped = [];
+    for (let word of stringArr) {
+      if (!this.inFlightMap[word]) {
+        deduped.push(word);
+        this.inFlightMap[word] = true;
+      }
+    }
+    return deduped;
+  }
+  removeFromFlight(words) {
+    for (let word of words) {
+      this.inFlightMap[word] = false;
+    }
+  }
+  addWords(words, lookupFn) {
+    const newWords = this.deduplicateAndAddToInFlightMap(words);
+    const batches = [];
+    for (let i = 0; i < newWords.length; i += this.batchSize) {
+      batches.push(newWords.slice(i, i + this.batchSize)); // Split new words into batches
+    }
+    // console.log("look mama I batched it!", batches)
+    const promises = batches.map(batch => {
+      return this.limit(() => lookupFn(batch)); // Call the provided lookup function with each batch
+    });
+    return Promise.all(promises).then(results => results.flat()); // Flatten the array of results
+  }
+}
+const wordLookupManager = new WordLookupManager();
 function splitIntoWords(text) {
   let words = text.split(" ");
   words = lodash__WEBPACK_IMPORTED_MODULE_1___default().map(words, word => {
@@ -40,8 +80,20 @@ function splitIntoWords(text) {
   });
   return lodash__WEBPACK_IMPORTED_MODULE_1___default().filter(words, word => word.length > 0);
 }
-function wordsToLanguageFrequency(words, wordToLanguageMap) {
-  return lodash__WEBPACK_IMPORTED_MODULE_1___default().reduce(lodash__WEBPACK_IMPORTED_MODULE_1___default().map(words, word => {
+function wordsToLanguageFrequency(words, wordToLanguageMap, countDuplicates) {
+  let deduped = [];
+  if (countDuplicates) {
+    let wordMap = {};
+    for (let word of words) {
+      if (!wordMap[word]) {
+        deduped.push(word);
+        wordMap[word] = true;
+      }
+    }
+  } else {
+    deduped = words;
+  }
+  return lodash__WEBPACK_IMPORTED_MODULE_1___default().reduce(lodash__WEBPACK_IMPORTED_MODULE_1___default().map(deduped, word => {
     let language = wordToLanguageMap[word];
     if (language == undefined) {
       language = 'Unknown';
@@ -56,53 +108,69 @@ function wordsToLanguageFrequency(words, wordToLanguageMap) {
     return freqMap;
   }, {});
 }
+function languageMapReducer(wordToLanguageMap, action) {
+  switch (action.type) {
+    case 'update':
+      const newWordMap = action.newWordMap;
+      console.log("adding " + Object.keys(action.newWordMap).length + " keys to existing " + Object.keys(wordToLanguageMap).length);
+      for (let word in wordToLanguageMap) {
+        newWordMap[word] = wordToLanguageMap[word];
+      }
+      return newWordMap;
+    default:
+      throw Error('Unknown action: ' + action.type);
+  }
+}
 function App() {
   _s();
-  const [rawText, setRawText] = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)("Type a sentence and discover its etymology");
-  const [wordToLanguageMap, setWordToLanguageMap] = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)({});
-  let words = splitIntoWords(rawText);
-  let wordsNotInMap = words.filter(word => !wordToLanguageMap[word]);
-  // TODO(deduplicate)
+  const [rawText, setRawText] = (0,react__WEBPACK_IMPORTED_MODULE_4__.useState)("Type a sentence and discover its etymology");
+  const [countDuplicates, setCountDuplicates] = (0,react__WEBPACK_IMPORTED_MODULE_4__.useState)(false);
+  //const [wordToLanguageMap, setWordToLanguageMap] = useState({});
+  const [wordToLanguageMap, dispatch] = (0,react__WEBPACK_IMPORTED_MODULE_4__.useReducer)(languageMapReducer, {});
+  // a write Mutex for wordToLanguageMap
+  // const mutex = new Mutex();
 
-  const data = {
-    words: wordsNotInMap
-  };
-  function lookupAgainstBackend() {
-    console.log("posting that data!");
-    axios__WEBPACK_IMPORTED_MODULE_4__["default"].post("https://pkuj506kcg.execute-api.us-west-2.amazonaws.com/default/etymologyLookup", data).then(result => {
+  function lookupAgainstBackend(words) {
+    const data = {
+      words
+    };
+    console.log("posting with data!", data);
+    return axios__WEBPACK_IMPORTED_MODULE_6__["default"].post("https://pkuj506kcg.execute-api.us-west-2.amazonaws.com/default/etymologyLookup", data).then(result => {
       console.log("got result data", result.data);
       if (result && result.data && result.data.words && Object.keys(result.data.words).length != 0) {
-        const newWordMap = result.data.words;
-        for (let word in wordToLanguageMap) {
-          newWordMap[word] = wordToLanguageMap[word];
-        }
-        setWordToLanguageMap(newWordMap);
-        console.log("updated word to language map");
+        wordLookupManager.removeFromFlight(Object.keys(result.data.words));
+        dispatch({
+          type: 'update',
+          newWordMap: result.data.words
+        });
       }
     }).catch(err => {
-      console.log("Attempted on data", data);
+      console.log("Attempted on words", JSON.stringify(words));
       console.error("Failed to update words from backend:", err);
     });
   }
-  console.log("words not in map: ", data);
+  let words = splitIntoWords(rawText);
+  let wordsNotInMap = words.filter(word => !wordToLanguageMap[word]);
+  console.log("words NOT in map: ", wordsNotInMap.length);
   if (wordsNotInMap.length != 0) {
-    lookupAgainstBackend();
+    console.log("words in language map: ", Object.keys(wordToLanguageMap).length);
+    wordLookupManager.addWords(wordsNotInMap, lookupAgainstBackend);
   }
-  let languageFrequencyMap = wordsToLanguageFrequency(words, wordToLanguageMap);
-  return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+  let languageFrequencyMap = wordsToLanguageFrequency(words, wordToLanguageMap, countDuplicates);
+  return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxDEV)("div", {
     className: "App",
-    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("header", {
+    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxDEV)("header", {
       className: "App-header",
-      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("textarea", {
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxDEV)("textarea", {
         value: rawText,
         onChange: e => setRawText(e.target.value)
       }, void 0, false, {
         fileName: _jsxFileName,
-        lineNumber: 239,
+        lineNumber: 314,
         columnNumber: 9
-      }, this), Object.keys(wordToLanguageMap).length > 0 ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(_mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_5__.PieChart, {
+      }, this), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxDEV)(_mui_x_charts_PieChart__WEBPACK_IMPORTED_MODULE_7__.PieChart, {
         series: [{
-          data: lodash__WEBPACK_IMPORTED_MODULE_1___default().map(lodash__WEBPACK_IMPORTED_MODULE_1___default().keys(languageFrequencyMap), lang => {
+          data: lodash__WEBPACK_IMPORTED_MODULE_1___default().map(lodash__WEBPACK_IMPORTED_MODULE_1___default().keys(languageFrequencyMap).filter(lang => lang != true || 'Unknown'), lang => {
             return {
               label: lang,
               value: languageFrequencyMap[lang],
@@ -113,21 +181,21 @@ function App() {
         width: 400
       }, void 0, false, {
         fileName: _jsxFileName,
-        lineNumber: 242,
+        lineNumber: 316,
         columnNumber: 9
-      }, this) : null]
+      }, this)]
     }, void 0, true, {
       fileName: _jsxFileName,
-      lineNumber: 238,
+      lineNumber: 313,
       columnNumber: 7
     }, this)
   }, void 0, false, {
     fileName: _jsxFileName,
-    lineNumber: 237,
+    lineNumber: 312,
     columnNumber: 5
   }, this);
 }
-_s(App, "DH1KtzjhxyizRjQBGgY/jk85RxY=");
+_s(App, "yihv6I2uQh2kjrGZ3Fi4fFHv3DU=");
 _c = App;
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (App);
 var _c;
@@ -83043,6 +83111,351 @@ var animated = host.animated;
 
 /***/ }),
 
+/***/ "./node_modules/async-mutex/index.mjs":
+/*!********************************************!*\
+  !*** ./node_modules/async-mutex/index.mjs ***!
+  \********************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   E_ALREADY_LOCKED: () => (/* binding */ E_ALREADY_LOCKED),
+/* harmony export */   E_CANCELED: () => (/* binding */ E_CANCELED),
+/* harmony export */   E_TIMEOUT: () => (/* binding */ E_TIMEOUT),
+/* harmony export */   Mutex: () => (/* binding */ Mutex),
+/* harmony export */   Semaphore: () => (/* binding */ Semaphore),
+/* harmony export */   tryAcquire: () => (/* binding */ tryAcquire),
+/* harmony export */   withTimeout: () => (/* binding */ withTimeout)
+/* harmony export */ });
+const E_TIMEOUT = new Error('timeout while waiting for mutex to become available');
+const E_ALREADY_LOCKED = new Error('mutex already locked');
+const E_CANCELED = new Error('request for lock canceled');
+var __awaiter$2 =  false || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+class Semaphore {
+  constructor(_value, _cancelError = E_CANCELED) {
+    this._value = _value;
+    this._cancelError = _cancelError;
+    this._queue = [];
+    this._weightedWaiters = [];
+  }
+  acquire(weight = 1, priority = 0) {
+    if (weight <= 0) throw new Error(`invalid weight ${weight}: must be positive`);
+    return new Promise((resolve, reject) => {
+      const task = {
+        resolve,
+        reject,
+        weight,
+        priority
+      };
+      const i = findIndexFromEnd(this._queue, other => priority <= other.priority);
+      if (i === -1 && weight <= this._value) {
+        // Needs immediate dispatch, skip the queue
+        this._dispatchItem(task);
+      } else {
+        this._queue.splice(i + 1, 0, task);
+      }
+    });
+  }
+  runExclusive(callback_1) {
+    return __awaiter$2(this, arguments, void 0, function* (callback, weight = 1, priority = 0) {
+      const [value, release] = yield this.acquire(weight, priority);
+      try {
+        return yield callback(value);
+      } finally {
+        release();
+      }
+    });
+  }
+  waitForUnlock(weight = 1, priority = 0) {
+    if (weight <= 0) throw new Error(`invalid weight ${weight}: must be positive`);
+    if (this._couldLockImmediately(weight, priority)) {
+      return Promise.resolve();
+    } else {
+      return new Promise(resolve => {
+        if (!this._weightedWaiters[weight - 1]) this._weightedWaiters[weight - 1] = [];
+        insertSorted(this._weightedWaiters[weight - 1], {
+          resolve,
+          priority
+        });
+      });
+    }
+  }
+  isLocked() {
+    return this._value <= 0;
+  }
+  getValue() {
+    return this._value;
+  }
+  setValue(value) {
+    this._value = value;
+    this._dispatchQueue();
+  }
+  release(weight = 1) {
+    if (weight <= 0) throw new Error(`invalid weight ${weight}: must be positive`);
+    this._value += weight;
+    this._dispatchQueue();
+  }
+  cancel() {
+    this._queue.forEach(entry => entry.reject(this._cancelError));
+    this._queue = [];
+  }
+  _dispatchQueue() {
+    this._drainUnlockWaiters();
+    while (this._queue.length > 0 && this._queue[0].weight <= this._value) {
+      this._dispatchItem(this._queue.shift());
+      this._drainUnlockWaiters();
+    }
+  }
+  _dispatchItem(item) {
+    const previousValue = this._value;
+    this._value -= item.weight;
+    item.resolve([previousValue, this._newReleaser(item.weight)]);
+  }
+  _newReleaser(weight) {
+    let called = false;
+    return () => {
+      if (called) return;
+      called = true;
+      this.release(weight);
+    };
+  }
+  _drainUnlockWaiters() {
+    if (this._queue.length === 0) {
+      for (let weight = this._value; weight > 0; weight--) {
+        const waiters = this._weightedWaiters[weight - 1];
+        if (!waiters) continue;
+        waiters.forEach(waiter => waiter.resolve());
+        this._weightedWaiters[weight - 1] = [];
+      }
+    } else {
+      const queuedPriority = this._queue[0].priority;
+      for (let weight = this._value; weight > 0; weight--) {
+        const waiters = this._weightedWaiters[weight - 1];
+        if (!waiters) continue;
+        const i = waiters.findIndex(waiter => waiter.priority <= queuedPriority);
+        (i === -1 ? waiters : waiters.splice(0, i)).forEach(waiter => waiter.resolve());
+      }
+    }
+  }
+  _couldLockImmediately(weight, priority) {
+    return (this._queue.length === 0 || this._queue[0].priority < priority) && weight <= this._value;
+  }
+}
+function insertSorted(a, v) {
+  const i = findIndexFromEnd(a, other => v.priority <= other.priority);
+  a.splice(i + 1, 0, v);
+}
+function findIndexFromEnd(a, predicate) {
+  for (let i = a.length - 1; i >= 0; i--) {
+    if (predicate(a[i])) {
+      return i;
+    }
+  }
+  return -1;
+}
+var __awaiter$1 =  false || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+class Mutex {
+  constructor(cancelError) {
+    this._semaphore = new Semaphore(1, cancelError);
+  }
+  acquire() {
+    return __awaiter$1(this, arguments, void 0, function* (priority = 0) {
+      const [, releaser] = yield this._semaphore.acquire(1, priority);
+      return releaser;
+    });
+  }
+  runExclusive(callback, priority = 0) {
+    return this._semaphore.runExclusive(() => callback(), 1, priority);
+  }
+  isLocked() {
+    return this._semaphore.isLocked();
+  }
+  waitForUnlock(priority = 0) {
+    return this._semaphore.waitForUnlock(1, priority);
+  }
+  release() {
+    if (this._semaphore.isLocked()) this._semaphore.release();
+  }
+  cancel() {
+    return this._semaphore.cancel();
+  }
+}
+var __awaiter =  false || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+function withTimeout(sync, timeout, timeoutError = E_TIMEOUT) {
+  return {
+    acquire: (weightOrPriority, priority) => {
+      let weight;
+      if (isSemaphore(sync)) {
+        weight = weightOrPriority;
+      } else {
+        weight = undefined;
+        priority = weightOrPriority;
+      }
+      if (weight !== undefined && weight <= 0) {
+        throw new Error(`invalid weight ${weight}: must be positive`);
+      }
+      return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+        let isTimeout = false;
+        const handle = setTimeout(() => {
+          isTimeout = true;
+          reject(timeoutError);
+        }, timeout);
+        try {
+          const ticket = yield isSemaphore(sync) ? sync.acquire(weight, priority) : sync.acquire(priority);
+          if (isTimeout) {
+            const release = Array.isArray(ticket) ? ticket[1] : ticket;
+            release();
+          } else {
+            clearTimeout(handle);
+            resolve(ticket);
+          }
+        } catch (e) {
+          if (!isTimeout) {
+            clearTimeout(handle);
+            reject(e);
+          }
+        }
+      }));
+    },
+    runExclusive(callback, weight, priority) {
+      return __awaiter(this, void 0, void 0, function* () {
+        let release = () => undefined;
+        try {
+          const ticket = yield this.acquire(weight, priority);
+          if (Array.isArray(ticket)) {
+            release = ticket[1];
+            return yield callback(ticket[0]);
+          } else {
+            release = ticket;
+            return yield callback();
+          }
+        } finally {
+          release();
+        }
+      });
+    },
+    release(weight) {
+      sync.release(weight);
+    },
+    cancel() {
+      return sync.cancel();
+    },
+    waitForUnlock: (weightOrPriority, priority) => {
+      let weight;
+      if (isSemaphore(sync)) {
+        weight = weightOrPriority;
+      } else {
+        weight = undefined;
+        priority = weightOrPriority;
+      }
+      if (weight !== undefined && weight <= 0) {
+        throw new Error(`invalid weight ${weight}: must be positive`);
+      }
+      return new Promise((resolve, reject) => {
+        const handle = setTimeout(() => reject(timeoutError), timeout);
+        (isSemaphore(sync) ? sync.waitForUnlock(weight, priority) : sync.waitForUnlock(priority)).then(() => {
+          clearTimeout(handle);
+          resolve();
+        });
+      });
+    },
+    isLocked: () => sync.isLocked(),
+    getValue: () => sync.getValue(),
+    setValue: value => sync.setValue(value)
+  };
+}
+function isSemaphore(sync) {
+  return sync.getValue !== undefined;
+}
+
+// eslint-disable-next-lisne @typescript-eslint/explicit-module-boundary-types
+function tryAcquire(sync, alreadyAcquiredError = E_ALREADY_LOCKED) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return withTimeout(sync, 0, alreadyAcquiredError);
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/axios/lib/adapters/adapters.js":
 /*!*****************************************************!*\
   !*** ./node_modules/axios/lib/adapters/adapters.js ***!
@@ -91551,6 +91964,104 @@ function keyof(value) {
 
 /***/ }),
 
+/***/ "./node_modules/p-limit/async-hooks-stub.js":
+/*!**************************************************!*\
+  !*** ./node_modules/p-limit/async-hooks-stub.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   AsyncLocalStorage: () => (/* binding */ AsyncLocalStorage),
+/* harmony export */   AsyncResource: () => (/* binding */ AsyncResource)
+/* harmony export */ });
+const AsyncResource = {
+  bind(fn, _type, thisArg) {
+    return fn.bind(thisArg);
+  }
+};
+class AsyncLocalStorage {
+  getStore() {
+    return undefined;
+  }
+  run(_store, callback) {
+    return callback();
+  }
+}
+
+/***/ }),
+
+/***/ "./node_modules/p-limit/index.js":
+/*!***************************************!*\
+  !*** ./node_modules/p-limit/index.js ***!
+  \***************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ pLimit)
+/* harmony export */ });
+/* harmony import */ var yocto_queue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! yocto-queue */ "./node_modules/yocto-queue/index.js");
+/* harmony import */ var _async_hooks__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! #async_hooks */ "./node_modules/p-limit/async-hooks-stub.js");
+
+
+function pLimit(concurrency) {
+  if (!((Number.isInteger(concurrency) || concurrency === Number.POSITIVE_INFINITY) && concurrency > 0)) {
+    throw new TypeError('Expected `concurrency` to be a number from 1 and up');
+  }
+  const queue = new yocto_queue__WEBPACK_IMPORTED_MODULE_0__["default"]();
+  let activeCount = 0;
+  const next = () => {
+    activeCount--;
+    if (queue.size > 0) {
+      queue.dequeue()();
+    }
+  };
+  const run = async (function_, resolve, arguments_) => {
+    activeCount++;
+    const result = (async () => function_(...arguments_))();
+    resolve(result);
+    try {
+      await result;
+    } catch {}
+    next();
+  };
+  const enqueue = (function_, resolve, arguments_) => {
+    queue.enqueue(_async_hooks__WEBPACK_IMPORTED_MODULE_1__.AsyncResource.bind(run.bind(undefined, function_, resolve, arguments_)));
+    (async () => {
+      // This function needs to wait until the next microtask before comparing
+      // `activeCount` to `concurrency`, because `activeCount` is updated asynchronously
+      // when the run function is dequeued and called. The comparison in the if-statement
+      // needs to happen asynchronously as well to get an up-to-date value for `activeCount`.
+      await Promise.resolve();
+      if (activeCount < concurrency && queue.size > 0) {
+        queue.dequeue()();
+      }
+    })();
+  };
+  const generator = (function_, ...arguments_) => new Promise(resolve => {
+    enqueue(function_, resolve, arguments_);
+  });
+  Object.defineProperties(generator, {
+    activeCount: {
+      get: () => activeCount
+    },
+    pendingCount: {
+      get: () => queue.size
+    },
+    clearQueue: {
+      value() {
+        queue.clear();
+      }
+    }
+  });
+  return generator;
+}
+
+/***/ }),
+
 /***/ "./node_modules/stylis/src/Enum.js":
 /*!*****************************************!*\
   !*** ./node_modules/stylis/src/Enum.js ***!
@@ -92636,6 +93147,75 @@ function combine(array, callback) {
   return array.map(callback).join('');
 }
 
+/***/ }),
+
+/***/ "./node_modules/yocto-queue/index.js":
+/*!*******************************************!*\
+  !*** ./node_modules/yocto-queue/index.js ***!
+  \*******************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Queue)
+/* harmony export */ });
+/*
+How it works:
+`this.#head` is an instance of `Node` which keeps track of its current value and nests another instance of `Node` that keeps the value that comes after it. When a value is provided to `.enqueue()`, the code needs to iterate through `this.#head`, going deeper and deeper to find the last value. However, iterating through every single item is slow. This problem is solved by saving a reference to the last value as `this.#tail` so that it can reference it to add a new value.
+*/
+
+class Node {
+  value;
+  next;
+  constructor(value) {
+    this.value = value;
+  }
+}
+class Queue {
+  #head;
+  #tail;
+  #size;
+  constructor() {
+    this.clear();
+  }
+  enqueue(value) {
+    const node = new Node(value);
+    if (this.#head) {
+      this.#tail.next = node;
+      this.#tail = node;
+    } else {
+      this.#head = node;
+      this.#tail = node;
+    }
+    this.#size++;
+  }
+  dequeue() {
+    const current = this.#head;
+    if (!current) {
+      return;
+    }
+    this.#head = this.#head.next;
+    this.#size--;
+    return current.value;
+  }
+  clear() {
+    this.#head = undefined;
+    this.#tail = undefined;
+    this.#size = 0;
+  }
+  get size() {
+    return this.#size;
+  }
+  *[Symbol.iterator]() {
+    let current = this.#head;
+    while (current) {
+      yield current.value;
+      current = current.next;
+    }
+  }
+}
+
 /***/ })
 
 /******/ 	});
@@ -92742,7 +93322,7 @@ function combine(array, callback) {
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("6ec4a63c6a78b0c14e70")
+/******/ 		__webpack_require__.h = () => ("4c04a7e54efb9d8100e2")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/global */
