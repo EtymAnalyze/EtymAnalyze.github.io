@@ -79,7 +79,7 @@ const hasStatus = computed(
           <p v-if="retryingList.length" class="status-line retrying">
             <span class="dot"></span>
             Waiting on etymology for {{ retryingList.length }}
-            word{{ retryingList.length === 1 ? '' : 's' }} (retrying with backoff)…
+            word{{ retryingList.length === 1 ? '' : 's' }} (retrying)…
           </p>
           <p v-if="exhaustedList.length" class="status-line exhausted">
             Gave up after retries: {{ exhaustedList.join(', ') }}
