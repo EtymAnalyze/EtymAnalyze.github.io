@@ -1,17 +1,28 @@
 import { ref } from 'vue'
 
-const PASTELS = [
-  '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E0BBE4',
-  '#FEC8D8', '#D4F0F0', '#FFDAC1', '#B5EAD7', '#C7CEEA', '#F8C8DC'
-]
-
 const languageColors = new Map()
+
 function colorForLanguage(language) {
-  if (!language) return '#dddddd'
-  if (!languageColors.has(language)) {
-    languageColors.set(language, PASTELS[languageColors.size % PASTELS.length])
+  if (!language || language === 'Unknown') return '#cccccc';
+  
+  // Create a consistent hash for the language name
+  let hash = 0;
+  for (let i = 0; i < language.length; i++) {
+    hash = language.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return languageColors.get(language)
+  
+  // Generate HSL color with constrained lightness and saturation
+  const hue = Math.abs(hash) % 360; // Full hue range
+  const saturation = 70 + Math.abs(hash) % 30; // 70-100% saturation
+  const lightness = 75 + Math.abs(hash) % 15; // 75-90% lightness
+
+  const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+  if (!languageColors.has(language)) {
+    languageColors.set(language, color);
+  }
+  
+  return color;
 }
 
 function cleanEtymology(raw) {
